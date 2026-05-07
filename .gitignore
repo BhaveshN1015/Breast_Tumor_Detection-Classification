@@ -1,0 +1,61 @@
+# ================================================================
+# .gitignore  — paste this into a file named exactly: .gitignore
+# ================================================================
+# --- Datasets (too large, sensitive medical data) ---
+data/
+segmentation_from_shared_folder/
+segmentation_predictions/
+ 
+# --- Virtual environment ---
+ml/
+env/
+venv/
+.env/
+*.egg-info/
+ 
+# --- Python cache ---
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+ 
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+ 
+# --- Large binary data files ---
+*.npy
+*.nii
+*.nii.gz
+*.dcm
+*.h5
+*.hdf5
+ 
+# --- Output files (generated on the fly) ---
+outputs/*.png
+outputs/*.csv
+outputs/*.json
+results/
+ 
+# --- OS files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+ 
+# --- IDE ---
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+ 
+# --- Training history npy files ---
+training_history.npy
+training_history_3d.npy
+training_history_dynunet.npy
+ 
+# --- Intermediate prediction outputs ---
+segmentation_predictions/
+ 
+# NOTE: .pth model weights ARE tracked via Git LFS
+# NOTE: training_log.json and .docx logs ARE tracked (small)
+ 

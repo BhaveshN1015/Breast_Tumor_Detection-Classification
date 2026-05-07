@@ -1,0 +1,169 @@
+# ============================================================
+#  BREAST TUMOR AI PROJECT — COMPLETE REQUIREMENTS
+#  Generated: April 2026
+#  Python version: 3.10.x  (3.11 works too; avoid 3.12 with MONAI)
+# ============================================================
+#
+#  INSTALLATION ORDER (read carefully before pip install):
+#
+#  STEP 1 — Install CUDA + PyTorch FIRST (see links below)
+#  STEP 2 — pip install -r requirements.txt
+#  STEP 3 — pip install monai[all]  (separate — large install)
+#
+# ============================================================
+#
+#  PYTORCH + CUDA INSTALLATION LINKS:
+#
+#  Official selector:  https://pytorch.org/get-started/locally/
+#
+#  RTX 3050  (CUDA 11.8):
+#    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+#  RTX 2000 Ada  (CUDA 12.1):
+#    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+#  RTX 2000 Ada  (CUDA 12.4 — latest stable):
+#    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+#
+#  CPU only (no GPU):
+#    pip install torch torchvision torchaudio
+#
+#  Verify install:
+#    python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
+#
+# ============================================================
+#
+#  CUDA TOOLKIT DOWNLOAD (if not already installed):
+#  https://developer.nvidia.com/cuda-downloads
+#
+#  cuDNN (needed for optimal training speed):
+#  https://developer.nvidia.com/cudnn
+#
+#  NVIDIA Driver:
+#  https://www.nvidia.com/Download/index.aspx
+#
+# ============================================================
+
+
+# ── Core scientific stack ─────────────────────────────────────────
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+scikit-image>=0.21.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+pillow>=10.0.0
+tqdm>=4.65.0
+
+# ── Medical imaging ───────────────────────────────────────────────
+# MONAI — install separately after PyTorch:
+#   pip install monai[all]
+# or minimal:
+#   pip install monai
+monai>=1.3.0
+
+# NIfTI / DICOM / medical file I/O
+nibabel>=5.0.0
+pydicom>=2.4.0
+SimpleITK>=2.3.0
+
+# ── Deep learning utils ───────────────────────────────────────────
+# torch, torchvision, torchaudio — installed via CUDA wheel above
+# Listed here for reference only (do NOT pip install from here):
+# torch>=2.1.0
+# torchvision>=0.16.0
+# torchaudio>=2.1.0
+
+# ── Mixed-precision / AMP ─────────────────────────────────────────
+# Included in PyTorch — no separate install needed
+# Used: torch.amp.autocast, torch.amp.GradScaler
+
+# ── Segmentation model dependencies ──────────────────────────────
+# MONAI provides: UNet, DynUNet, EfficientNetBN, ResNet variants
+# All included in:  pip install monai[all]
+
+# ── XGBoost (radiomics feature classifier — optional) ────────────
+xgboost>=2.0.0
+
+# ── PyRadiomics (texture/shape features — optional) ──────────────
+# Install separately:  pip install pyradiomics
+# pyradiomics>=3.1.0
+
+# ── Notebook / visualisation ──────────────────────────────────────
+jupyter>=1.0.0
+ipykernel>=6.25.0
+ipywidgets>=8.1.0
+notebook>=7.0.0
+nbformat>=5.9.0
+
+# ── Word document logging (training .docx files) ─────────────────
+python-docx>=1.1.0
+
+# ── Image / DICOM conversion ──────────────────────────────────────
+opencv-python>=4.8.0
+imageio>=2.31.0
+
+# ── File utilities ────────────────────────────────────────────────
+openpyxl>=3.1.0          # Excel file reading (fastMRI labels.xlsx)
+h5py>=3.9.0              # HDF5 files (some DICOM stacks)
+
+# ── Progress bars + logging ───────────────────────────────────────
+tqdm>=4.65.0
+colorama>=0.4.6          # Windows colour support in terminal
+
+# ── Optional — faster data loading ───────────────────────────────
+# zarr>=2.16.0           # Alternative array storage
+# albumentations>=1.3.0  # 2D augmentation (used in 2D pipeline)
+
+# ── 2D segmentation backbone (System 1) ──────────────────────────
+# segmentation-models-pytorch installs separately:
+#   pip install segmentation-models-pytorch
+# segmentation-models-pytorch>=0.3.3
+
+# ── CLAHE preprocessing (used in 2D pipeline) ────────────────────
+# Included in opencv-python — no separate install needed
+
+# ── Environment management ────────────────────────────────────────
+# Recommended: conda or venv
+# conda create -n ml python=3.10
+# conda activate ml
+# Then follow STEP 1 and STEP 2 above.
+
+
+# ============================================================
+#  COMPLETE INSTALL SCRIPT (copy-paste into terminal)
+#
+#  Windows PowerShell / Command Prompt:
+#
+#  conda create -n ml python=3.10 -y
+#  conda activate ml
+#
+#  # RTX 2000 Ada (CUDA 12.1):
+#  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+#  # RTX 3050 (CUDA 11.8):
+#  # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+#  pip install -r requirements.txt
+#  pip install monai[all]
+#  pip install segmentation-models-pytorch
+#  pip install pyradiomics
+#
+# ============================================================
+#
+#  VERIFY EVERYTHING WORKS:
+#
+#  python -c "
+#  import torch, monai, numpy, scipy, sklearn, nibabel, pydicom
+#  import SimpleITK, matplotlib, pandas, cv2, docx
+#  print('PyTorch:', torch.__version__)
+#  print('CUDA available:', torch.cuda.is_available())
+#  if torch.cuda.is_available():
+#      print('GPU:', torch.cuda.get_device_name(0))
+#      print('VRAM:', round(torch.cuda.get_device_properties(0).total_memory/1e9,1), 'GB')
+#  print('MONAI:', monai.__version__)
+#  print('NumPy:', numpy.__version__)
+#  print('All imports OK')
+#  "
+#
+# ============================================================

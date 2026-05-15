@@ -30,13 +30,7 @@ __pycache__/
 *.dcm
 *.h5
 *.hdf5
- 
-# --- Output files (generated on the fly) ---
-outputs/*.png
-outputs/*.csv
-outputs/*.json
-results/
- 
+
 # --- OS files ---
 .DS_Store
 Thumbs.db

@@ -1,0 +1,774 @@
+{
+  "existing": {
+    "name": "Existing (patients_combined)",
+    "total": 12,
+    "ok": 12,
+    "dtype_ok": 12,
+    "channels_ok": 12,
+    "errors": 0,
+    "warnings": 0,
+    "shapes_image": [
+      [
+        3,
+        205,
+        111,
+        126
+      ],
+      [
+        3,
+        226,
+        106,
+        127
+      ],
+      [
+        3,
+        226,
+        131,
+        130
+      ],
+      [
+        3,
+        50,
+        181,
+        179
+      ],
+      [
+        3,
+        50,
+        181,
+        179
+      ],
+      [
+        3,
+        50,
+        181,
+        179
+      ],
+      [
+        3,
+        50,
+        180,
+        175
+      ],
+      [
+        3,
+        50,
+        181,
+        175
+      ],
+      [
+        3,
+        50,
+        179,
+        173
+      ],
+      [
+        3,
+        53,
+        181,
+        169
+      ]
+    ],
+    "depths": [
+      50,
+      53,
+      205,
+      226
+    ],
+    "heights": [
+      106,
+      111,
+      131,
+      179,
+      180,
+      181
+    ],
+    "widths": [
+      126,
+      127,
+      130,
+      166,
+      169,
+      171,
+      173,
+      175,
+      179
+    ],
+    "deep_samples": [
+      {
+        "pid": "train/1",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          205,
+          111,
+          126
+        ],
+        "label_shape": [
+          1,
+          205,
+          111,
+          126
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.3921,
+        "img_std": 1.3537,
+        "img_min": -0.5946,
+        "img_max": 5.1431,
+        "lbl_min": 0.0,
+        "lbl_max": 1.0,
+        "lbl_nonzero": 1434
+      },
+      {
+        "pid": "train/10",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          226,
+          106,
+          127
+        ],
+        "label_shape": [
+          1,
+          226,
+          106,
+          127
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.3906,
+        "img_std": 1.2892,
+        "img_min": -0.6525,
+        "img_max": 5.3567,
+        "lbl_min": 0.0,
+        "lbl_max": 1.0,
+        "lbl_nonzero": 12799
+      },
+      {
+        "pid": "train/100",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          226,
+          131,
+          130
+        ],
+        "label_shape": [
+          1,
+          226,
+          131,
+          130
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.2758,
+        "img_std": 1.237,
+        "img_min": -0.6127,
+        "img_max": 4.5828,
+        "lbl_min": 0.0,
+        "lbl_max": 1.0,
+        "lbl_nonzero": 2438
+      },
+      {
+        "pid": "train/103",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          50,
+          181,
+          179
+        ],
+        "label_shape": [
+          1,
+          50,
+          181,
+          179
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0,
+        "img_std": 0.837,
+        "img_min": -0.9225,
+        "img_max": 6.0157,
+        "lbl_min": 0.0,
+        "lbl_max": 1.0,
+        "lbl_nonzero": 3119
+      },
+      {
+        "pid": "val/101",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          50,
+          181,
+          179
+        ],
+        "label_shape": [
+          1,
+          50,
+          181,
+          179
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": -0.0,
+        "img_std": 0.8363,
+        "img_min": -0.7562,
+        "img_max": 6.6612,
+        "lbl_min": 0.0,
+        "lbl_max": 1.0,
+        "lbl_nonzero": 5020
+      }
+    ]
+  },
+  "fastmri": {
+    "name": "FastMRI NPY (all classes)",
+    "total": 20,
+    "ok": 20,
+    "dtype_ok": 20,
+    "channels_ok": 20,
+    "errors": 0,
+    "warnings": 0,
+    "shapes_image": [
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ],
+      [
+        3,
+        141,
+        213,
+        213
+      ]
+    ],
+    "depths": [
+      141
+    ],
+    "heights": [
+      213
+    ],
+    "widths": [
+      213
+    ],
+    "deep_samples": [
+      {
+        "pid": "train/benign/fastMRI_breast_002",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          141,
+          213,
+          213
+        ],
+        "label_shape": [
+          1,
+          141,
+          213,
+          213
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0,
+        "img_std": 1.0,
+        "img_min": -0.535,
+        "img_max": 4.9064,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "train/benign/fastMRI_breast_004",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          141,
+          213,
+          213
+        ],
+        "label_shape": [
+          1,
+          141,
+          213,
+          213
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": -0.0,
+        "img_std": 1.0,
+        "img_min": -0.6608,
+        "img_max": 4.6934,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "train/benign/fastMRI_breast_005",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          141,
+          213,
+          213
+        ],
+        "label_shape": [
+          1,
+          141,
+          213,
+          213
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0,
+        "img_std": 1.0,
+        "img_min": -0.4635,
+        "img_max": 5.2089,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "train/benign/fastMRI_breast_007",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          141,
+          213,
+          213
+        ],
+        "label_shape": [
+          1,
+          141,
+          213,
+          213
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0,
+        "img_std": 1.0,
+        "img_min": -0.4375,
+        "img_max": 4.9906,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "train/benign/fastMRI_breast_008",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          141,
+          213,
+          213
+        ],
+        "label_shape": [
+          1,
+          141,
+          213,
+          213
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": -0.0,
+        "img_std": 1.0,
+        "img_min": -0.4439,
+        "img_max": 5.2133,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      }
+    ]
+  },
+  "breastdx": {
+    "name": "BreastDx Normals",
+    "total": 15,
+    "ok": 15,
+    "dtype_ok": 15,
+    "channels_ok": 15,
+    "errors": 0,
+    "warnings": 0,
+    "shapes_image": [
+      [
+        3,
+        56,
+        184,
+        230
+      ],
+      [
+        3,
+        60,
+        161,
+        225
+      ],
+      [
+        3,
+        60,
+        136,
+        206
+      ],
+      [
+        3,
+        40,
+        144,
+        226
+      ],
+      [
+        3,
+        40,
+        171,
+        242
+      ],
+      [
+        3,
+        56,
+        164,
+        213
+      ],
+      [
+        3,
+        59,
+        109,
+        165
+      ],
+      [
+        3,
+        63,
+        185,
+        252
+      ],
+      [
+        3,
+        53,
+        116,
+        161
+      ],
+      [
+        3,
+        56,
+        156,
+        190
+      ]
+    ],
+    "depths": [
+      40,
+      53,
+      56,
+      59,
+      60,
+      63
+    ],
+    "heights": [
+      109,
+      116,
+      136,
+      144,
+      156,
+      161,
+      164,
+      171,
+      175,
+      183,
+      184,
+      185,
+      189
+    ],
+    "widths": [
+      161,
+      165,
+      190,
+      206,
+      209,
+      211,
+      213,
+      225,
+      226,
+      230,
+      234,
+      242,
+      252,
+      277
+    ],
+    "deep_samples": [
+      {
+        "pid": "234",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          56,
+          184,
+          230
+        ],
+        "label_shape": [
+          1,
+          56,
+          184,
+          230
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0497,
+        "img_std": 1.0347,
+        "img_min": -0.848,
+        "img_max": 3.5215,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "235",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          60,
+          161,
+          225
+        ],
+        "label_shape": [
+          1,
+          60,
+          161,
+          225
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0154,
+        "img_std": 1.0301,
+        "img_min": -0.7357,
+        "img_max": 3.961,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "236",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          60,
+          136,
+          206
+        ],
+        "label_shape": [
+          1,
+          60,
+          136,
+          206
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.1045,
+        "img_std": 1.0605,
+        "img_min": -0.9483,
+        "img_max": 3.834,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "237",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          40,
+          144,
+          226
+        ],
+        "label_shape": [
+          1,
+          40,
+          144,
+          226
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.145,
+        "img_std": 1.1579,
+        "img_min": -0.7096,
+        "img_max": 5.2775,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      },
+      {
+        "pid": "238",
+        "image_exists": true,
+        "label_exists": true,
+        "image_shape": [
+          3,
+          40,
+          171,
+          242
+        ],
+        "label_shape": [
+          1,
+          40,
+          171,
+          242
+        ],
+        "image_dtype": "float32",
+        "label_dtype": "float32",
+        "channels_ok": true,
+        "dtype_ok": true,
+        "label_valid": true,
+        "shape_match": true,
+        "errors": [],
+        "warnings": [],
+        "img_mean": 0.0062,
+        "img_std": 0.9823,
+        "img_min": -0.6385,
+        "img_max": 7.1362,
+        "lbl_min": 0.0,
+        "lbl_max": 0.0,
+        "lbl_nonzero": 0
+      }
+    ]
+  }
+}

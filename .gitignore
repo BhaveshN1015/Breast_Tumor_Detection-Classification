@@ -52,4 +52,9 @@ segmentation_predictions/
  
 # NOTE: .pth model weights ARE tracked via Git LFS
 # NOTE: training_log.json and .docx logs ARE tracked (small)
- 
+ # -------------------------
+# ALLOW SAMPLE DATASET
+# -------------------------
+
+!sample_dataset/
+!sample_dataset/**

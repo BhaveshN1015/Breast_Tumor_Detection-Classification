@@ -188,6 +188,9 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 <!-- Replace the link below with your actual YouTube unlisted video URL -->
 [![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/zcFZ07l4b3c)
 
+## or
+![Project Demo](assets/demo.gif)
+
 > **Note on video hosting:** GitHub's free plan limits video uploads to 10 MB. Since the demo video is 38 MB, it is hosted on YouTube (unlisted). To push the video to GitHub via Git LFS instead, run:
 > ```bash
 > git lfs track "*.mp4"

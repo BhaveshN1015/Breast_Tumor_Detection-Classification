@@ -1,0 +1,13 @@
+# ============================================================
+#  Breast Tumor AI — Streamlit App Requirements
+#  Install: pip install -r requirements_app.txt
+#  NOTE: PyTorch + MONAI must already be installed in your env
+#  (see main requirements.txt for CUDA-specific install)
+# ============================================================
+
+streamlit>=1.35.0
+plotly>=5.18.0
+huggingface_hub>=0.23.0
+numpy>=1.24.0
+scipy>=1.10.0
+Pillow>=10.0.0

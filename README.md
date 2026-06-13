@@ -64,7 +64,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
                            ▼
          ┌─────────────────────────────────┐
          │  STAGE 1 — Tumor Detection      │
-         │  3D ResNet18 + CBAM Attention   │
+         │        3D ResNet18   │
          │  Output: Tumor probability      │
          └───────────┬─────────────────────┘
                      │  if positive (≥ threshold)
@@ -72,7 +72,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
          ┌─────────────────────────────────┐
          │  SEGMENTATION — Mask Prediction │
          │  MONAI UNet3D (35%) +           │
-         │  DynUNet / nnU-Net (65%)        │
+         │  DynUNet(65%)        │
          │  Sliding-window · 96³ patches   │
          │  Output: 3D tumor mask          │
          └───────────┬─────────────────────┘
@@ -91,7 +91,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 | Stage | Model | Parameters | Metric | Score |
 |-------|-------|-----------|--------|-------|
-| **Stage 1 — Detection** | 3D ResNet18 + CBAM | 33.4 M | Test AUC | **0.8765** |
+| **Stage 1 — Detection** | 3D ResNet18 | 33.4 M | Test AUC | **0.8765** |
 | **Segmentation** | MONAI UNet3D + DynUNet Ensemble | — | Mean Dice | **0.80** |
 | **Segmentation** | MONAI UNet3D + DynUNet Ensemble | — | Best Dice (Patient 67) | **0.9582** |
 | **Stage 3 — Classification** | 3D EfficientNet-B0 | 4.7 M | Test AUC | **0.9200** |
@@ -103,7 +103,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 **Dice Coefficient:** Measures volumetric overlap between the predicted tumor mask and the ground-truth annotation (range 0–1, where 1 = perfect). A **mean Dice of 0.80** across the test set is solid performance for 3D breast MRI segmentation. The **best single-patient Dice of 0.9582** (patient 67, full sliding-window inference) demonstrates the ensemble's capability on well-defined tumors.
 
-> **Segmentation inference note:** The pipeline uses sliding-window inference on the full 3D volume (96³ patches, 0.5 overlap, Gaussian importance weighting) with a MONAI:DynUNet ensemble blend of 0.35:0.65. This exactly replicates the training evaluation protocol and avoids spatial-cropping artifacts that would otherwise reduce Dice by ~0.05.
+> **Segmentation inference note:** The pipeline uses sliding-window inference on the full 3D volume (96³ patches, 0.5 overlap) with a MONAI:DynUNet ensemble blend of 0.35:0.65. This exactly replicates the training evaluation protocol and avoids spatial-cropping artifacts that would otherwise reduce Dice by ~0.05.
 
 </details>
 
@@ -186,7 +186,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 > The video below shows the complete Streamlit app running end-to-end: model loading, patient upload, Stage 1 detection, segmentation overlay, Stage 3 classification, and feature panel.
 
 <!-- Replace the link below with your actual YouTube unlisted video URL -->
-[![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/zcFZ07l4b3c)
 
 > **Note on video hosting:** GitHub's free plan limits video uploads to 10 MB. Since the demo video is 38 MB, it is hosted on YouTube (unlisted). To push the video to GitHub via Git LFS instead, run:
 > ```bash
@@ -202,22 +202,20 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ## 🏗️ Model Architectures
 
-### Stage 1 — 3D ResNet18 + CBAM Attention
+### Stage 1 — 3D ResNet18
 ```
 Input: (B, 3, D, H, W)
   └─ Conv3d stem (7×7×7, stride 2)
   └─ MaxPool3d
-  └─ Layer1: 2× BasicBlock3D + CBAM   [64 ch]
-  └─ Layer2: 2× BasicBlock3D + CBAM   [128 ch, stride 2]
-  └─ Layer3: 2× BasicBlock3D + CBAM   [256 ch, stride 2]
-  └─ Layer4: 2× BasicBlock3D + CBAM   [512 ch, stride 2]
+  └─ Layer1: 2× BasicBlock3D  [64 ch]
+  └─ Layer2: 2× BasicBlock3D  [128 ch, stride 2]
+  └─ Layer3: 2× BasicBlock3D  [256 ch, stride 2]
+  └─ Layer4: 2× BasicBlock3D  [512 ch, stride 2]
   └─ AdaptiveAvgPool3d → Dropout(0.5)
   └─ Linear(512 → 1) + Sigmoid
 Total: 33.4 M parameters
 Loss:  Focal-BCE (γ=2, α=0.25) + Label Smoothing (ε=0.1)
 ```
-
-**CBAM** (Convolutional Block Attention Module) sequentially applies a 1D channel attention map (C×1×1) and a 2D spatial attention map (1×H×W) to adaptively recalibrate feature responses, focusing the network on the tumor region.
 
 ---
 
@@ -229,7 +227,7 @@ MONAI UNet3D
   Residual:    True   |   Norm: InstanceNorm3D
   Dropout:     0.1    |   Loss: Tversky (α=0.3, β=0.7) + Focal
 
-DynUNet (nnU-Net style)
+DynUNet
   Kernels:     [[3,3,3],[3,3,3],[3,3,3],[3,3,3],[3,3,3]]
   Strides:     [[1,1,1],[2,2,2],[2,2,2],[2,2,2],[2,2,2]]
   Deep supervision weights: [1.0, 0.5, 0.25, 0.125, 0.0625]
@@ -261,9 +259,8 @@ Loss:  BCE with Label Smoothing (ε=0.1)
 | Architecture | Paper | Venue | Link |
 |---|---|---|---|
 | **ResNet** | He et al., *Deep Residual Learning for Image Recognition* | CVPR 2016 | [arXiv:1512.03385](https://arxiv.org/abs/1512.03385) |
-| **CBAM** | Woo et al., *CBAM: Convolutional Block Attention Module* | ECCV 2018 | [arXiv:1807.06521](https://arxiv.org/abs/1807.06521) |
 | **U-Net** | Ronneberger et al., *U-Net: Convolutional Networks for Biomedical Image Segmentation* | MICCAI 2015 | [arXiv:1505.04597](https://arxiv.org/abs/1505.04597) |
-| **nnU-Net / DynUNet** | Isensee et al., *nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation* | Nature Methods 2021 | [DOI:10.1038/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z) |
+| **DynUNet** | Isensee et al., *nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation* | Nature Methods 2021 | [DOI:10.1038/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z) |
 | **EfficientNet** | Tan & Le, *EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks* | ICML 2019 | [arXiv:1905.11946](https://arxiv.org/abs/1905.11946) |
 | **MONAI Framework** | Cardoso et al., *MONAI: An open-source framework for deep learning in healthcare* | arXiv 2022 | [arXiv:2211.02701](https://arxiv.org/abs/2211.02701) |
 
@@ -287,12 +284,6 @@ Loss:  BCE with Label Smoothing (ε=0.1)
 | FastMRI | 234+ | 3 T radial GRASP | Additional acceleration cases |
 | BreastDx normals | 234 – 249 | — | Extra negative (no-tumor) controls |
 
-| Split | Patients (Classification) | Patients (Segmentation) |
-|-------|--------------------------|------------------------|
-| Train | 516 | 233 |
-| Validation | 459 | — |
-| Test | 233 | 233 |
-
 - **Input format:** Preprocessed 3-channel `.npy` volumes of shape `(3, D, H, W)` — one channel per DCE phase.
 - **Voxel spacing assumed:** 1.5 mm isotropic (`VOXEL_MM³ = 3.375 mm³`).
 - **Raw datasets are not included** in this repository. Place preprocessed `.npy` files in `data/patients_combined/` and `data/classification_stage{1,3}/` following the structure in `data/classification_split_summary.txt`.
@@ -304,7 +295,7 @@ A small set of preprocessed sample patients is included in `sample_dataset/` for
 | Folder | Label | Notes |
 |--------|-------|-------|
 | `sample_dataset/positive/67/` | Positive (tumor) | Patient 67 — best segmentation Dice 0.9582; includes `image.npy` + `label.npy` |
-| `sample_dataset/negative/234/` | Negative (no tumor) | FastMRI case; includes `image.npy` only |
+| `sample_dataset/negative/245/` | Negative (no tumor) | FastMRI case; includes `image.npy` only |
 
 Download directly from GitHub:
 ```
@@ -320,9 +311,9 @@ Breast_Tumor_Detection-Classification/
 │
 ├── src/
 │   ├── segmentation_3d/            # MONAI UNet3D — model definition + training
-│   ├── dynunet_3d/                 # DynUNet (nnU-Net style) — model + ensemble
+│   ├── dynunet_3d/                 # DynUNet — model + ensemble
 │   └── classification/
-│       ├── stage1/                 # Tumor detection — 3D ResNet18 + CBAM
+│       ├── stage1/                 # Tumor detection — 3D ResNet18
 │       └── stage3/                 # Malignancy classifier — 3D EfficientNet-B0
 │
 ├── notebooks/

@@ -162,14 +162,6 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ---
 
-### Tumor Feature Distributions — Malignant vs. Benign
-> 12-panel histogram grid comparing malignant (red) vs. benign (green) distributions across volume, diameter, surface area, sphericity, compactness, elongation, DCE enhancement/washout, intensity statistics, and texture metrics. Dashed verticals show medians.
-
-![Feature Distributions](outputs/tumour_features_distribution.png)
-
-
----
-
 ## ▶️ Demo Video
 
 > The video below shows the complete Streamlit app running end-to-end: model loading, patient upload, Stage 1 detection, segmentation overlay, Stage 3 classification, and feature panel.

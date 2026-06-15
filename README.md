@@ -38,6 +38,7 @@
 - [Model Architectures](#-model-architectures)
 - [Research Papers](#-research-papers)
 - [Dataset](#-dataset)
+- [Data Preprocessing & Dataset Preparation](#-Data-Preprocessing--Dataset-Preparation)
 - [Repository Structure](#-repository-structure)
 - [Setup & Installation](#-setup--installation)
 - [Running the Streamlit App](#-running-the-streamlit-app)
@@ -123,12 +124,6 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ![Stage 3 Evaluation](outputs/stage3_eval.png)
 
----
-
-### Training Curves — All Stages
-> Train AUC vs. Val AUC per epoch for Stage 1 and Stage 3. Dashed amber line marks best validation epoch.
-
-![Training History](outputs/pipeline_training_history.png)
 
 ---
 
@@ -172,12 +167,6 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ![Feature Distributions](outputs/tumour_features_distribution.png)
 
----
-
-### Per-Patient Results Table
-> Full test-set table sorted by Stage 3 malignancy probability. Columns: patient ID, true label, S3 probability, predicted label, correct/incorrect tick, tumor volume (mm³), Stage 1 probability.
-
-![Patient Results Table](outputs/pipeline_patient_table.png)
 
 ---
 
@@ -306,6 +295,98 @@ https://github.com/BhaveshN1015/Breast_Tumor_Detection-Classification/tree/main/
 ```
 
 ---
+---
+
+## 🗃️ Data Preprocessing & Dataset Preparation
+
+### Raw Data Format
+
+Raw data was provided as **NIfTI (.nii/.nii.gz)** files. Each patient folder contained multiple DCE phase series (P0–P6), ground-truth tumor masks, and breast masks. Only **phases P1, P2, and P3** were used — corresponding to pre-contrast, peak enhancement, and delayed washout — as these three phases carry the maximum diagnostic signal for tumor detection and kinetic characterisation.
+
+---
+
+### Preprocessing Pipeline
+
+Each patient volume was processed through the following steps before being saved as a `.npy` file:
+
+**1. Phase Selection & Stacking**
+Phases P1, P2, P3 were extracted from the NIfTI series and stacked channel-wise into a single 4D array of shape `(3, D, H, W)` — one channel per DCE phase. Ground-truth masks were loaded separately as `(1, D, H, W)` binary arrays.
+
+**2. Intensity Normalization**
+Each channel (P1, P2, P3) was normalized independently using **percentile-based min-max normalization** to handle outlier intensities common in MRI. Voxel values were clipped and rescaled to `[0, 1]` per volume.
+
+**3. Spatial Handling**
+- Voxel spacing assumed at **1.5 mm isotropic** across all volumes
+- Volumes were **reflect-padded** to a minimum size of **96 × 96 × 96** at load time using MONAI's `SpatialPadd` with `mode="reflect"` — chosen over zero-padding to avoid artificial border artifacts, particularly critical for new-dataset patients with thin depth axes (~50 slices)
+- No global resampling to fixed voxel spacing was applied; instead, the patch-based training strategy handles variable volume sizes
+
+**4. Output Format**
+Each patient was saved as:
+```
+patient_id/
+    image.npy   — shape (3, D, H, W), dtype float32   [P1, P2, P3 stacked]
+    label.npy   — shape (1, D, H, W), dtype float32   [binary tumor mask]
+```
+
+---
+
+### Dataset Splits
+
+All splits were done at the **patient level** (no slice-level leakage) using a **70% / 15% / 15%** train/val/test ratio, stratified to maintain label balance across splits.
+
+| Split | Classification | Segmentation |
+|-------|---------------|-------------|
+| Train | ~70% | ~70% |
+| Validation | ~15% | ~15% |
+| Test | ~15% | ~15% |
+
+Two patient cohorts were combined:
+- **Primary cohort** (IDs ≤ 100): Original 1.5T Cartesian breast MRI patients with full DCE series and GT masks — deeper volumes (~220 slices depth)
+- **Extended cohort** (IDs > 100): Additional patients from FastMRI and BreastDx sources with matching P1/P2/P3 phases — shallower volumes (~50 slices depth)
+
+To handle the geometric difference between cohorts, **new-cohort patients (IDs > 100) were upsampled 2× per epoch** using PyTorch's `WeightedRandomSampler`, ensuring the model trained equally on both depth geometries without overfitting to the primary cohort's axis layout.
+
+---
+
+### Training-Time Augmentation
+
+All augmentations were applied **on-the-fly per patch** during training using MONAI transforms. Validation and test sets received no augmentation beyond reflect-padding.
+
+**Patch Sampling**
+- Patch size: **96 × 96 × 96** voxels
+- 6 patches sampled per volume per training step
+- Sampling ratio: **4 tumor-centred patches : 1 background patch** via `RandCropByLabelClassesd` — ensures the model sees sufficient positive voxels despite the small tumor-to-volume ratio
+
+**Spatial Augmentations**
+
+| Transform | Parameters | Purpose |
+|-----------|-----------|---------|
+| Random Flip | prob=0.5, all 3 axes | Left-right / superior-inferior symmetry |
+| Random Rotate 90° | prob=0.5, up to 3 rotations | Orientation invariance |
+| Random Affine | prob=0.3, rotate ±15°, scale ±10% | Mild shape variation |
+| 3D Elastic Deformation | prob=0.2, σ∈[3,5], magnitude∈[50,150] | Generalise across old (D≈220) and new (D≈50) geometry |
+
+**Intensity Augmentations**
+
+| Transform | Parameters | Purpose |
+|-----------|-----------|---------|
+| Random Intensity Shift | offset=0.1, prob=0.4 | Scanner brightness variation |
+| Random Intensity Scale | factor=0.1, prob=0.4 | Contrast variation |
+| Gaussian Noise | std=0.05, prob=0.3 | Simulate acquisition noise |
+| Gaussian Smoothing | σ∈[0.5,1.0], prob=0.2 | Simulate resolution differences |
+
+> **Note on elastic deformation:** Kept mild (prob=0.2) intentionally — aggressive elastic deformation on small tumors risks distorting the lesion boundary and degrading segmentation quality.
+
+---
+
+### Class Imbalance Handling
+
+Breast tumor segmentation has an extreme foreground/background imbalance — tumor voxels typically represent less than **0.05%** of the total volume. Three strategies were used in combination to address this:
+
+1. **Tumor-biased patch sampling** — `RandCropByLabelClassesd` with ratio `[4, 1]` ensures 80% of patches are centred on tumor regions
+2. **Output bias correction** — the final conv layer bias is initialized to `log(0.0005 / 0.9995) ≈ −7.60`, so the model's sigmoid output starts at ~0.0005 (matching tumor prevalence) rather than 0.5, preventing early training collapse
+3. **Tversky + Focal loss** — `Tversky(α=0.3, β=0.7)` penalises false negatives ~2.3× more than false positives; combined with `Focal(γ=2, α=0.95)` to focus training on hard-to-classify tumor voxels
+
 
 ## 📁 Repository Structure
 

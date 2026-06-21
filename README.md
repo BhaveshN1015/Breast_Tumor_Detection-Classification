@@ -144,20 +144,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 > Geometry · Texture · DCE kinetics · Intensity histogram inside mask · Shape radar chart.
 
 ![Feature Panel](outputs/seg_features_67.png)
-
 ---
-
-### Tumor Feature Distributions — Malignant vs. Benign
-> 12-panel histogram grid comparing malignant (red) vs. benign (green) distributions across volume, diameter, surface area, sphericity, compactness, elongation, DCE enhancement/washout, intensity statistics, and texture metrics. Dashed verticals show medians.
-
-![Feature Distributions](outputs/tumour_features_distribution.png)
-
----
-
-### Per-Patient Results Table
-> Full test-set table sorted by malignancy probability. Columns: patient ID, true label, classification probability, predicted label, correct/incorrect tick, tumor volume (mm³).
-
-![Patient Results Table](outputs/pipeline_patient_table.png)
 
 ---
 

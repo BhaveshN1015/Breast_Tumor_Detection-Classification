@@ -165,10 +165,10 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 > The video below shows the complete Streamlit app running end-to-end: patient upload, segmentation overlay, classification result, and feature panel.
 
-[![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/zcFZ07l4b3c)
+[![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/VZ097UBy5Kw)
 
 ## or
-![Project Demo](assets/demo.gif)
+![Project Demo](assets/b_tumor_latest.gif)
 
 > **Note on video hosting:** GitHub's standard file limit is 100 MB. To push the demo video via Git LFS:
 > ```bash

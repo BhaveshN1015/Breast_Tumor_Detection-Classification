@@ -2,17 +2,17 @@
 
 <img src="https://img.shields.io/badge/Deep%20Learning-Medical%20AI-blueviolet?style=for-the-badge&logo=pytorch" />
 <img src="https://img.shields.io/badge/DCE--MRI-3D%20Pipeline-informational?style=for-the-badge&logo=databricks" />
-<img src="https://img.shields.io/badge/Stage%201%20AUC-0.8765-success?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Stage%203%20AUC-0.9200-success?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Classification%20AUC-0.9200-success?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Mean%20Dice-0.80-orange?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Best%20Dice-0.9582-brightgreen?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge&logo=python" />
 <img src="https://img.shields.io/badge/CUDA-11.8%2B-76B900?style=for-the-badge&logo=nvidia" />
 
 <br><br>
 
-# 🔬 Breast Tumor AI — 3-Stage DCE-MRI Pipeline
+# 🔬 Breast Tumor AI — DCE-MRI Segmentation & Classification Pipeline
 
-**A complete end-to-end deep learning pipeline for breast MRI tumor detection, segmentation, and malignancy classification using 3-channel Dynamic Contrast-Enhanced MRI (DCE-MRI) volumes.**
+**An end-to-end deep learning pipeline for breast MRI tumor segmentation and malignancy classification using 3-channel Dynamic Contrast-Enhanced MRI (DCE-MRI) volumes.**
 
 <br>
 
@@ -38,7 +38,7 @@
 - [Model Architectures](#-model-architectures)
 - [Research Papers](#-research-papers)
 - [Dataset](#-dataset)
-- [Data Preprocessing & Dataset Preparation](#-Data-Preprocessing--Dataset-Preparation)
+- [Data Preprocessing & Dataset Preparation](#-data-preprocessing--dataset-preparation)
 - [Repository Structure](#-repository-structure)
 - [Setup & Installation](#-setup--installation)
 - [Running the Streamlit App](#-running-the-streamlit-app)
@@ -58,30 +58,24 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 | **P3** | Delayed / Washout | ~3–5 min post-injection | Kinetic characterisation (Type I/II/III) |
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│         Input: 3-channel DCE-MRI Volume (P1·P2·P3)      │
-└──────────────────────────┬──────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│         Input: 3-channel DCE-MRI Volume (P1·P2·P3)       │
+└──────────────────────────┬───────────────────────────────┘
                            │
                            ▼
          ┌─────────────────────────────────┐
-         │  STAGE 1 — Tumor Detection      │
-         │        3D ResNet18   │
-         │  Output: Tumor probability      │
-         └───────────┬─────────────────────┘
-                     │  if positive (≥ threshold)
-                     ▼
-         ┌─────────────────────────────────┐
          │  SEGMENTATION — Mask Prediction │
-         │  MONAI UNet3D (35%) +           │
-         │  DynUNet(65%)        │
+         │  MONAI UNet3D  (35% weight)     │
+         │  DynUNet / nnU-Net (65% weight) │
          │  Sliding-window · 96³ patches   │
-         │  Output: 3D tumor mask          │
+         │  Output: 3D binary tumor mask   │
          └───────────┬─────────────────────┘
                      │
                      ▼
          ┌─────────────────────────────────┐
-         │  STAGE 3 — Malignancy Classif.  │
+         │  CLASSIFICATION                 │
          │  3D EfficientNet-B0             │
+         │  Input: masked tumor region     │
          │  Output: Benign / Malignant     │
          └─────────────────────────────────┘
 ```
@@ -92,19 +86,18 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 | Stage | Model | Parameters | Metric | Score |
 |-------|-------|-----------|--------|-------|
-| **Stage 1 — Detection** | 3D ResNet18 | 33.4 M | Test AUC | **0.8765** |
 | **Segmentation** | MONAI UNet3D + DynUNet Ensemble | — | Mean Dice | **0.80** |
 | **Segmentation** | MONAI UNet3D + DynUNet Ensemble | — | Best Dice (Patient 67) | **0.9582** |
-| **Stage 3 — Classification** | 3D EfficientNet-B0 | 4.7 M | Test AUC | **0.9200** |
+| **Classification** | 3D EfficientNet-B0 | 4.7 M | Test AUC | **0.9200** |
 
 <details>
 <summary><b>📖 How to interpret these metrics</b></summary>
 
-**AUC (Area Under the ROC Curve):** Ranges 0–1; a score of 1.0 is a perfect classifier and 0.5 is random chance. An AUC of **0.8765** for Stage 1 means the model correctly ranks a tumor patient above a normal patient ~88% of the time. An AUC of **0.9200** for Stage 3 (benign vs. malignant) represents strong clinical-grade discriminative ability.
+**Dice Coefficient:** Measures volumetric overlap between the predicted tumor mask and the ground-truth annotation (range 0–1, where 1 = perfect overlap). A **mean Dice of 0.80** across the test set is solid performance for 3D breast MRI segmentation. The **best single-patient Dice of 0.9582** (patient 67, full sliding-window inference) demonstrates the ensemble's capability on well-defined tumors.
 
-**Dice Coefficient:** Measures volumetric overlap between the predicted tumor mask and the ground-truth annotation (range 0–1, where 1 = perfect). A **mean Dice of 0.80** across the test set is solid performance for 3D breast MRI segmentation. The **best single-patient Dice of 0.9582** (patient 67, full sliding-window inference) demonstrates the ensemble's capability on well-defined tumors.
+**AUC (Area Under the ROC Curve):** Ranges 0–1; a score of 1.0 is a perfect classifier and 0.5 is random chance. An AUC of **0.9200** for benign vs. malignant classification represents strong clinical-grade discriminative ability.
 
-> **Segmentation inference note:** The pipeline uses sliding-window inference on the full 3D volume (96³ patches, 0.5 overlap) with a MONAI:DynUNet ensemble blend of 0.35:0.65. This exactly replicates the training evaluation protocol and avoids spatial-cropping artifacts that would otherwise reduce Dice by ~0.05.
+> **Segmentation inference note:** The pipeline uses sliding-window inference on the full 3D volume (96³ patches, 0.5 overlap, Gaussian importance weighting) with a MONAI:DynUNet ensemble blend of 0.35:0.65. This exactly replicates the training evaluation protocol and avoids spatial-cropping artifacts that would otherwise reduce Dice by ~0.05.
 
 </details>
 
@@ -112,18 +105,10 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ## 🖼️ Visual Results
 
-### Stage 1 — Tumor Detection (Test Set)
-> Confusion matrix · ROC curve (AUC = 0.8765) · Per-patient tumor probability bar chart
-
-![Stage 1 Evaluation](outputs/stage1_eval.png)
-
----
-
-### Stage 3 — Benign vs. Malignant (Test Set)
+### Classification — Benign vs. Malignant (Test Set)
 > Confusion matrix · ROC curve (AUC = 0.9200) · Per-patient malignancy probability bar chart
 
 ![Stage 3 Evaluation](outputs/stage3_eval.png)
-
 
 ---
 
@@ -162,17 +147,30 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 ---
 
+### Tumor Feature Distributions — Malignant vs. Benign
+> 12-panel histogram grid comparing malignant (red) vs. benign (green) distributions across volume, diameter, surface area, sphericity, compactness, elongation, DCE enhancement/washout, intensity statistics, and texture metrics. Dashed verticals show medians.
+
+![Feature Distributions](outputs/tumour_features_distribution.png)
+
+---
+
+### Per-Patient Results Table
+> Full test-set table sorted by malignancy probability. Columns: patient ID, true label, classification probability, predicted label, correct/incorrect tick, tumor volume (mm³).
+
+![Patient Results Table](outputs/pipeline_patient_table.png)
+
+---
+
 ## ▶️ Demo Video
 
-> The video below shows the complete Streamlit app running end-to-end: model loading, patient upload, Stage 1 detection, segmentation overlay, Stage 3 classification, and feature panel.
+> The video below shows the complete Streamlit app running end-to-end: patient upload, segmentation overlay, classification result, and feature panel.
 
-<!-- Replace the link below with your actual YouTube unlisted video URL -->
 [![Demo Video](https://img.shields.io/badge/▶%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/zcFZ07l4b3c)
 
 ## or
 ![Project Demo](assets/demo.gif)
 
-> **Note on video hosting:** GitHub's free plan limits video uploads to 10 MB. Since the demo video is 38 MB, it is hosted on YouTube (unlisted). To push the video to GitHub via Git LFS instead, run:
+> **Note on video hosting:** GitHub's standard file limit is 100 MB. To push the demo video via Git LFS:
 > ```bash
 > git lfs track "*.mp4"
 > git add .gitattributes
@@ -180,58 +178,48 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 > git commit -m "Add demo video via LFS"
 > git push origin main
 > ```
-> Git LFS supports files up to 2 GB on the free tier. The above commands track `.mp4` with LFS, bypassing GitHub's standard 100 MB hard limit.
 
 ---
 
 ## 🏗️ Model Architectures
 
-### Stage 1 — 3D ResNet18
-```
-Input: (B, 3, D, H, W)
-  └─ Conv3d stem (7×7×7, stride 2)
-  └─ MaxPool3d
-  └─ Layer1: 2× BasicBlock3D  [64 ch]
-  └─ Layer2: 2× BasicBlock3D  [128 ch, stride 2]
-  └─ Layer3: 2× BasicBlock3D  [256 ch, stride 2]
-  └─ Layer4: 2× BasicBlock3D  [512 ch, stride 2]
-  └─ AdaptiveAvgPool3d → Dropout(0.5)
-  └─ Linear(512 → 1) + Sigmoid
-Total: 33.4 M parameters
-Loss:  Focal-BCE (γ=2, α=0.25) + Label Smoothing (ε=0.1)
-```
-
----
-
 ### Segmentation Ensemble — MONAI UNet3D + DynUNet
+
 ```
 MONAI UNet3D
-  Channels:    (3) → 32 → 64 → 128 → 256 → 512
-  Strides:     (2, 2, 2, 2)
-  Residual:    True   |   Norm: InstanceNorm3D
-  Dropout:     0.1    |   Loss: Tversky (α=0.3, β=0.7) + Focal
+  In channels:  3 (P1, P2, P3)
+  Channels:     32 → 64 → 128 → 256 → 320
+  Strides:      (2, 2, 2, 2)
+  Residual:     True   |   Norm: InstanceNorm3D
+  Dropout:      0.1    |   Act:  LeakyReLU(0.01)
+  Loss:         Tversky (α=0.3, β=0.7) + Focal (γ=2, α=0.95)
 
-DynUNet
-  Kernels:     [[3,3,3],[3,3,3],[3,3,3],[3,3,3],[3,3,3]]
-  Strides:     [[1,1,1],[2,2,2],[2,2,2],[2,2,2],[2,2,2]]
+DynUNet (nnU-Net style)
+  In channels:  3 (P1, P2, P3)
+  Kernels:      [[3,3,3] × 5 stages]
+  Strides:      [[1,1,1], [2,2,2], [2,2,2], [2,2,2], [2,2,2]]
+  Filters:      32 → 64 → 128 → 256 → 320
   Deep supervision weights: [1.0, 0.5, 0.25, 0.125, 0.0625]
-  Loss:        Tversky + Focal
+  Norm:         InstanceNorm3D  |  Residual blocks: True
+  Loss:         Tversky (α=0.3, β=0.7) + Focal (γ=2, α=0.95)
 
-Ensemble blend:  MONAI 0.35 × pred  +  DynUNet 0.65 × pred
-Inference:       Sliding-window · patch 96³ · overlap 0.5 · Gaussian weighting
+Ensemble blend:   MONAI 0.35 × pred  +  DynUNet 0.65 × pred
+Inference:        Sliding-window · patch 96³ · overlap 0.5 · Gaussian weighting
+Post-processing:  Morphological closing → min-size filter (50 voxels) → keep largest component
 ```
 
 ---
 
-### Stage 3 — 3D EfficientNet-B0
+### Classification — 3D EfficientNet-B0
+
 ```
-Input: (B, 3, D, H, W)
+Input: (B, 3, D, H, W)  — masked tumor region from segmentation
   └─ Stem Conv3d (3×3×3, stride 2)
   └─ MBConv3D blocks (B0 scaling: width×1.0, depth×1.0)
   └─ Head Conv3d → AdaptiveAvgPool3d
   └─ Dropout(0.4) → Linear(1280 → 1) + Sigmoid
-Total: 4.7 M parameters
-Loss:  BCE with Label Smoothing (ε=0.1)
+Total:  4.7 M parameters
+Loss:   BCE with Label Smoothing (ε=0.1)
 ```
 
 ---
@@ -242,9 +230,8 @@ Loss:  BCE with Label Smoothing (ε=0.1)
 
 | Architecture | Paper | Venue | Link |
 |---|---|---|---|
-| **ResNet** | He et al., *Deep Residual Learning for Image Recognition* | CVPR 2016 | [arXiv:1512.03385](https://arxiv.org/abs/1512.03385) |
 | **U-Net** | Ronneberger et al., *U-Net: Convolutional Networks for Biomedical Image Segmentation* | MICCAI 2015 | [arXiv:1505.04597](https://arxiv.org/abs/1505.04597) |
-| **DynUNet** | Isensee et al., *nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation* | Nature Methods 2021 | [DOI:10.1038/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z) |
+| **nnU-Net / DynUNet** | Isensee et al., *nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation* | Nature Methods 2021 | [DOI:10.1038/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z) |
 | **EfficientNet** | Tan & Le, *EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks* | ICML 2019 | [arXiv:1905.11946](https://arxiv.org/abs/1905.11946) |
 | **MONAI Framework** | Cardoso et al., *MONAI: An open-source framework for deep learning in healthcare* | arXiv 2022 | [arXiv:2211.02701](https://arxiv.org/abs/2211.02701) |
 
@@ -264,67 +251,9 @@ Loss:  BCE with Label Smoothing (ε=0.1)
 
 | Source | Patient IDs | Scanner | Notes |
 |--------|-------------|---------|-------|
-| Primary cohort | 1 – 233 | 1.5 T Cartesian | Core breast MRI cases |
+| Primary cohort | 1 – 233 | 1.5 T Cartesian | Core breast MRI cases with GT masks |
 | FastMRI | 234+ | 3 T radial GRASP | Additional acceleration cases |
-| BreastDx normals | 234 – 249 | — | Extra negative (no-tumor) controls |
-
-- **Input format:** Preprocessed 3-channel `.npy` volumes of shape `(3, D, H, W)` — one channel per DCE phase.
-- **Voxel spacing assumed:** 1.5 mm isotropic (`VOXEL_MM³ = 3.375 mm³`).
-- **Raw datasets are not included** in this repository. Place preprocessed `.npy` files in `data/patients_combined/` and `data/classification_stage{1,3}/` following the structure in `data/classification_split_summary.txt`.
-
-### 🧪 Sample Test Patients
-
-A small set of preprocessed sample patients is included in `sample_dataset/` for running the Streamlit demo:
-
-| Folder | Label | Notes |
-|--------|-------|-------|
-| `sample_dataset/positive/67/` | Positive (tumor) | Patient 67 — best segmentation Dice 0.9582; includes `image.npy` + `label.npy` |
-| `sample_dataset/negative/245/` | Negative (no tumor) | FastMRI case; includes `image.npy` only |
-
-Download directly from GitHub:
-```
-https://github.com/BhaveshN1015/Breast_Tumor_Detection-Classification/tree/main/sample_dataset
-```
-
----
----
-
-## 🗃️ Data Preprocessing & Dataset Preparation
-
-### Raw Data Format
-
-Raw data was provided as **NIfTI (.nii/.nii.gz)** files. Each patient folder contained multiple DCE phase series (P0–P6), ground-truth tumor masks, and breast masks. Only **phases P1, P2, and P3** were used — corresponding to pre-contrast, peak enhancement, and delayed washout — as these three phases carry the maximum diagnostic signal for tumor detection and kinetic characterisation.
-
----
-
-### Preprocessing Pipeline
-
-Each patient volume was processed through the following steps before being saved as a `.npy` file:
-
-**1. Phase Selection & Stacking**
-Phases P1, P2, P3 were extracted from the NIfTI series and stacked channel-wise into a single 4D array of shape `(3, D, H, W)` — one channel per DCE phase. Ground-truth masks were loaded separately as `(1, D, H, W)` binary arrays.
-
-**2. Intensity Normalization**
-Each channel (P1, P2, P3) was normalized independently using **percentile-based min-max normalization** to handle outlier intensities common in MRI. Voxel values were clipped and rescaled to `[0, 1]` per volume.
-
-**3. Spatial Handling**
-- Voxel spacing assumed at **1.5 mm isotropic** across all volumes
-- Volumes were **reflect-padded** to a minimum size of **96 × 96 × 96** at load time using MONAI's `SpatialPadd` with `mode="reflect"` — chosen over zero-padding to avoid artificial border artifacts, particularly critical for new-dataset patients with thin depth axes (~50 slices)
-- No global resampling to fixed voxel spacing was applied; instead, the patch-based training strategy handles variable volume sizes
-
-**4. Output Format**
-Each patient was saved as:
-```
-patient_id/
-    image.npy   — shape (3, D, H, W), dtype float32   [P1, P2, P3 stacked]
-    label.npy   — shape (1, D, H, W), dtype float32   [binary tumor mask]
-```
-
----
-
-### Dataset Splits
-
-All splits were done at the **patient level** (no slice-level leakage) using a **70% / 15% / 15%** train/val/test ratio, stratified to maintain label balance across splits.
+| BreastDx normals | 234 – 249 | — | Extra negative controls |
 
 | Split | Classification | Segmentation |
 |-------|---------------|-------------|
@@ -332,31 +261,81 @@ All splits were done at the **patient level** (no slice-level leakage) using a *
 | Validation | ~15% | ~15% |
 | Test | ~15% | ~15% |
 
-Two patient cohorts were combined:
-- **Primary cohort** (IDs ≤ 100): Original 1.5T Cartesian breast MRI patients with full DCE series and GT masks — deeper volumes (~220 slices depth)
-- **Extended cohort** (IDs > 100): Additional patients from FastMRI and BreastDx sources with matching P1/P2/P3 phases — shallower volumes (~50 slices depth)
+- **Input format:** Preprocessed 3-channel `.npy` volumes of shape `(3, D, H, W)` — one channel per DCE phase.
+- **Voxel spacing assumed:** 1.5 mm isotropic.
+- **Raw datasets are not included** in this repository. Place preprocessed `.npy` files in `data/patients_combined/` and `data/classification_stage3/` following the structure in `data/classification_split_summary.txt`.
 
-To handle the geometric difference between cohorts, **new-cohort patients (IDs > 100) were upsampled 2× per epoch** using PyTorch's `WeightedRandomSampler`, ensuring the model trained equally on both depth geometries without overfitting to the primary cohort's axis layout.
+### 🧪 Sample Test Patients
+
+| Folder | Label | Notes |
+|--------|-------|-------|
+| `sample_dataset/positive/67/` | Positive (tumor) | Best segmentation case — Dice 0.9582; includes `image.npy` + `label.npy` |
+| `sample_dataset/negative/234/` | Negative (no tumor) | FastMRI case; `image.npy` only |
+
+Download directly:
+```
+https://github.com/BhaveshN1015/Breast_Tumor_Detection-Classification/tree/main/sample_dataset
+```
+
+---
+
+## 🗃️ Data Preprocessing & Dataset Preparation
+
+### Raw Data Format
+
+Raw data was provided as **NIfTI (.nii / .nii.gz)** files. Each patient folder contained multiple DCE phase series (P0–P6), ground-truth tumor masks, and breast masks. Only **phases P1, P2, and P3** were used — corresponding to pre-contrast, peak enhancement, and delayed washout — as these three phases carry the maximum diagnostic signal for tumor segmentation and kinetic characterisation.
+
+---
+
+### Preprocessing Pipeline
+
+**1. Phase Selection & Stacking**
+Phases P1, P2, P3 were extracted and stacked channel-wise into a single 4D array of shape `(3, D, H, W)`. Ground-truth masks were loaded as `(1, D, H, W)` binary arrays.
+
+**2. Intensity Normalization**
+Each channel was normalized independently using **percentile-based min-max normalization** to handle outlier intensities common in MRI. Values were clipped and rescaled to `[0, 1]` per volume.
+
+**3. Spatial Handling**
+- Voxel spacing assumed at **1.5 mm isotropic** across all volumes
+- Volumes reflect-padded to a minimum of **96 × 96 × 96** at load time using MONAI `SpatialPadd(mode="reflect")` — avoids zero-border artifacts, critical for new-cohort patients with thin depth axes (~50 slices)
+- No global resampling applied; the patch-based training strategy handles variable volume sizes naturally
+
+**4. Output Format**
+```
+patient_id/
+    image.npy   — shape (3, D, H, W), float32   [P1, P2, P3 stacked]
+    label.npy   — shape (1, D, H, W), float32   [binary tumor mask]
+```
+
+---
+
+### Dataset Splits
+
+Patient-level 70% / 15% / 15% train/val/test split, stratified to maintain label balance. Two cohorts were combined:
+
+- **Primary cohort** (IDs ≤ 100): Original 1.5T patients, deeper volumes (~220 slices depth)
+- **Extended cohort** (IDs > 100): FastMRI / BreastDx patients, shallower volumes (~50 slices depth)
+
+New-cohort patients were **upsampled 2× per epoch** via PyTorch `WeightedRandomSampler` to close the geometry gap between the two cohorts.
 
 ---
 
 ### Training-Time Augmentation
 
-All augmentations were applied **on-the-fly per patch** during training using MONAI transforms. Validation and test sets received no augmentation beyond reflect-padding.
+All augmentations applied on-the-fly per patch during training only. Validation and test sets receive reflect-padding only.
 
 **Patch Sampling**
-- Patch size: **96 × 96 × 96** voxels
-- 6 patches sampled per volume per training step
-- Sampling ratio: **4 tumor-centred patches : 1 background patch** via `RandCropByLabelClassesd` — ensures the model sees sufficient positive voxels despite the small tumor-to-volume ratio
+- Patch size: **96 × 96 × 96** voxels · 6 patches per volume per step
+- Ratio: **4 tumor-centred : 1 background** via `RandCropByLabelClassesd`
 
 **Spatial Augmentations**
 
 | Transform | Parameters | Purpose |
 |-----------|-----------|---------|
 | Random Flip | prob=0.5, all 3 axes | Left-right / superior-inferior symmetry |
-| Random Rotate 90° | prob=0.5, up to 3 rotations | Orientation invariance |
+| Random Rotate 90° | prob=0.5, up to 3× | Orientation invariance |
 | Random Affine | prob=0.3, rotate ±15°, scale ±10% | Mild shape variation |
-| 3D Elastic Deformation | prob=0.2, σ∈[3,5], magnitude∈[50,150] | Generalise across old (D≈220) and new (D≈50) geometry |
+| 3D Elastic Deformation | prob=0.2, σ∈[3,5], magnitude∈[50,150] | Generalise across cohort geometry differences |
 
 **Intensity Augmentations**
 
@@ -367,18 +346,17 @@ All augmentations were applied **on-the-fly per patch** during training using MO
 | Gaussian Noise | std=0.05, prob=0.3 | Simulate acquisition noise |
 | Gaussian Smoothing | σ∈[0.5,1.0], prob=0.2 | Simulate resolution differences |
 
-> **Note on elastic deformation:** Kept mild (prob=0.2) intentionally — aggressive elastic deformation on small tumors risks distorting the lesion boundary and degrading segmentation quality.
-
 ---
 
 ### Class Imbalance Handling
 
-Breast tumor segmentation has an extreme foreground/background imbalance — tumor voxels typically represent less than **0.05%** of the total volume. Three strategies were used in combination to address this:
+Tumor voxels typically represent less than **0.05%** of the total volume. Three strategies used in combination:
 
-1. **Tumor-biased patch sampling** — `RandCropByLabelClassesd` with ratio `[4, 1]` ensures 80% of patches are centred on tumor regions
-2. **Output bias correction** — the final conv layer bias is initialized to `log(0.0005 / 0.9995) ≈ −7.60`, so the model's sigmoid output starts at ~0.0005 (matching tumor prevalence) rather than 0.5, preventing early training collapse
-3. **Tversky + Focal loss** — `Tversky(α=0.3, β=0.7)` penalises false negatives ~2.3× more than false positives; combined with `Focal(γ=2, α=0.95)` to focus training on hard-to-classify tumor voxels
+1. **Tumor-biased patch sampling** — `RandCropByLabelClassesd` ratio `[4, 1]` — 80% of patches centred on tumor regions
+2. **Output bias correction** — final conv layer bias initialized to `log(0.0005 / 0.9995) ≈ −7.60`, so sigmoid output starts at ~0.0005 matching tumor prevalence, preventing training collapse
+3. **Tversky + Focal loss** — `Tversky(α=0.3, β=0.7)` penalises false negatives ~2.3× more than false positives; combined with `Focal(γ=2, α=0.95)` for hard-voxel focus
 
+---
 
 ## 📁 Repository Structure
 
@@ -389,19 +367,15 @@ Breast_Tumor_Detection-Classification/
 │   ├── segmentation_3d/            # MONAI UNet3D — model definition + training
 │   ├── dynunet_3d/                 # DynUNet — model + ensemble
 │   └── classification/
-│       ├── stage1/                 # Tumor detection — 3D ResNet18
 │       └── stage3/                 # Malignancy classifier — 3D EfficientNet-B0
 │
 ├── notebooks/
-│   └── full_pipeline.ipynb         # End-to-end evaluation pipeline
+│   ├── full_pipeline.ipynb                     # End-to-end evaluation pipeline
 │   └── main_pipeline_v2_no_kinetics.ipynb
 │
 ├── models/                         # Trained weights — stored via Git LFS
-│   ├── classification_stage1/
-│   │   ├── best_model_raw.pth      # Stage 1 checkpoint (~382 MB)
-│   │   └── training_log.json
 │   ├── classification_stage3/
-│   │   ├── best_model.pth          # Stage 3 checkpoint (~54 MB)
+│   │   ├── best_model.pth          # Classification checkpoint (~54 MB)
 │   │   └── training_log.json
 │   ├── segmentation_3d/
 │   │   └── unet3d_best_raw.pth     # MONAI UNet3D checkpoint (~50 MB)
@@ -440,29 +414,25 @@ cd Breast_Tumor_Detection-Classification
 ### 2. Install Git LFS and Pull Model Weights
 
 ```bash
-# Install Git LFS (if not already installed)
 git lfs install
-
-# Pull the model .pth files tracked by LFS
 git lfs pull
 ```
 
-> Alternatively, model weights are available directly on Hugging Face Hub:
+> Alternatively, model weights are available on Hugging Face Hub:
 > **[huggingface.co/B1015/breast-tumor-ai](https://huggingface.co/B1015/breast-tumor-ai)**
 
 ### 3. Create Virtual Environment and Install Dependencies
 
 ```bash
-# Using conda (recommended)
+# conda (recommended)
 conda create -n breast_tumor python=3.10
 conda activate breast_tumor
 
-# Or using venv
+# or venv
 python -m venv ml
 ml\Scripts\activate         # Windows
 source ml/bin/activate      # Linux / macOS
 
-# Install all dependencies
 pip install -r requirements.txt
 ```
 
@@ -476,57 +446,43 @@ python -c "import torch; import monai; print('PyTorch:', torch.__version__); pri
 
 ## 🖥️ Running the Streamlit App
 
-The Streamlit app provides an interactive demo of the full pipeline.
-
-### Quick Start
-
 ```bash
-# Install Streamlit if not already in your environment
 pip install streamlit plotly
-
-# Run the app
 streamlit run app.py
 ```
 
-The app will open at `http://localhost:8501`.
+Opens at `http://localhost:8501`.
 
-### How to Use the App
+### How to Use
 
-**Step 1 — Accept the disclaimer** on the welcome screen.
+**Step 1 —** Accept the disclaimer on the welcome screen.
 
-**Step 2 — Download a sample patient** from GitHub:
-
+**Step 2 —** Download a sample patient from GitHub:
 ```
 https://github.com/BhaveshN1015/Breast_Tumor_Detection-Classification/tree/main/sample_dataset
 ```
+- `positive/67/` — tumor patient with `image.npy` + `label.npy` (enables GT overlay)
+- `negative/234/` — normal patient with `image.npy` only
 
-Download either:
-- `sample_dataset/positive/67/image.npy` + `label.npy` — tumor patient (for segmentation overlay)
-- `sample_dataset/negative/234/image.npy` — normal patient
+**Step 3 —** Models auto-download from Hugging Face Hub on first run with progress bars. Cached on subsequent runs.
 
-**Step 3 — Load models.** The app automatically downloads all 4 model checkpoints from Hugging Face Hub on first run (requires internet). Progress bars are shown for each download. On subsequent runs the cached local weights are used.
+**Step 4 —** Upload `.npy` file(s) via the sidebar uploader.
 
-**Step 4 — Upload the `.npy` file(s)** using the file uploader in the sidebar.
-
-**Step 5 — View results** stage by stage:
-- Stage 1 probability gauge and detection result
-- Segmentation overlay on axial slices + MIP views + ground-truth comparison (if `label.npy` uploaded)
-- Stage 3 malignancy probability + tumor feature panel
+**Step 5 —** View results: segmentation overlay on axial slices + MIP views + GT comparison + classification probability + tumor feature panel.
 
 ### Models on Hugging Face Hub
 
-| File | Path in Repo | Size |
-|------|--------------|------|
-| Stage 1 classifier | `models/classification_stage1/best_model_raw.pth` | ~382 MB |
+| Model | Path | Size |
+|-------|------|------|
 | Segmentation UNet3D | `models/segmentation_3d/unet3d_best_raw.pth` | ~50 MB |
 | Segmentation DynUNet | `models/dynunet_3d/dynunet_best_raw.pth` | ~64 MB |
-| Stage 3 classifier | `models/classification_stage3/best_model.pth` | ~54 MB |
+| Classification | `models/classification_stage3/best_model.pth` | ~54 MB |
 
 ---
 
 ## 🧮 Tumor Feature Extraction
 
-For each segmented tumor the pipeline extracts the following features, displayed in the feature panel and per-patient results table:
+For each segmented tumor the pipeline computes:
 
 **Geometry**
 
@@ -538,7 +494,7 @@ For each segmented tumor the pipeline extracts the following features, displayed
 | Sphericity | `π^(1/3) × (6V)^(2/3) / SA` — 1.0 = perfect sphere |
 | Compactness | `V / (SA^(3/2))` |
 | Elongation | Ratio of shortest to longest axis |
-| T-stage | Estimated from max diameter (T1 ≤ 20 mm, T2 20–50 mm, T3 > 50 mm) |
+| T-stage | Estimated from max diameter (T1 ≤ 20 mm · T2 20–50 mm · T3 > 50 mm) |
 
 **DCE Kinetics**
 
@@ -546,11 +502,11 @@ For each segmented tumor the pipeline extracts the following features, displayed
 |---------|---------|
 | Enhancement ratio | `(mean_P2 − mean_P1) / |mean_P1|` |
 | Washout rate | `(mean_P2 − mean_P3) / |mean_P2|` |
-| Kinetic type | Type I (Persistent): washout < 0.1 · Type II (Plateau): 0.1–0.2 · Type III (Washout): > 0.2 |
+| Kinetic type | Type I Persistent: washout < 0.1 · Type II Plateau: 0.1–0.2 · Type III Washout: > 0.2 |
 
 **Texture (P2 channel inside mask)**
 
-Mean intensity · Std intensity · Min / Max intensity · Contrast `(max − min)` · Homogeneity `1 − std / (max − min)`
+Mean intensity · Std intensity · Min/Max intensity · Contrast `(max − min)` · Homogeneity `1 − std / (max − min)`
 
 ---
 
@@ -558,9 +514,9 @@ Mean intensity · Std intensity · Min / Max intensity · Contrast `(max − min
 
 | Stage | GPU | VRAM | Notes |
 |-------|-----|------|-------|
-| Stage 1 training | RTX 3050 Laptop | 6 GB | Mixed-precision (AMP) |
-| Segmentation + Stage 3 | RTX 2000 Ada | 16 GB | Sliding-window inference |
-| Inference (all stages) | Any CUDA GPU | 4 GB+ | Falls back to CPU if no GPU |
+| Segmentation training | RTX 2000 Ada | 16 GB | Sliding-window inference, BF16 AMP |
+| Classification training | RTX 3050 Laptop | 6 GB | Mixed-precision (AMP) |
+| Inference | Any CUDA GPU | 4 GB+ | Falls back to CPU if no GPU detected |
 
 Mixed-precision inference (`torch.cuda.amp`) is enabled automatically when a CUDA device is detected.
 

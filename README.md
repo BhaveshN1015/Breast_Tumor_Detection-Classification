@@ -25,8 +25,7 @@
 
 ---
 
-> ⚠️ **Medical Disclaimer:** This project is a **research prototype only** and is **not intended for real clinical diagnosis**. All results are for academic and demonstration purposes. Do not use this system to make any medical decisions.
-
+> 
 ---
 
 ## 📋 Table of Contents

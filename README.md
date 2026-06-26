@@ -97,8 +97,6 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 
 **AUC (Area Under the ROC Curve):** Ranges 0–1; a score of 1.0 is a perfect classifier and 0.5 is random chance. An AUC of **0.9200** for benign vs. malignant classification represents strong clinical-grade discriminative ability.
 
-> **Segmentation inference note:** The pipeline uses sliding-window inference on the full 3D volume (96³ patches, 0.5 overlap, Gaussian importance weighting) with a MONAI:DynUNet ensemble blend of 0.35:0.65. This exactly replicates the training evaluation protocol and avoids spatial-cropping artifacts that would otherwise reduce Dice by ~0.05.
-
 </details>
 
 ---

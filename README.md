@@ -94,7 +94,7 @@ Each DCE-MRI volume contains three temporal phases of contrast agent uptake:
 <details>
 <summary><b>📖 How to interpret these metrics</b></summary>
 
-**Dice Coefficient: Measures volumetric overlap between the predicted tumor mask and the ground-truth annotation (range 0–1, where 1 = perfect overlap). A mean Dice of 0.80 across the test set is solid performance for 3D breast MRI segmentation. The best single-patient Dice of 0.9582 (patient 67, full sliding-window inference) demonstrates the ensemble's capability on well-defined tumors.
+**Dice Coefficient**: Measures volumetric overlap between the predicted tumor mask and the ground-truth annotation (range 0–1, where 1 = perfect overlap). A mean Dice of 0.80 across the test set is solid performance for 3D breast MRI segmentation. The best single-patient Dice of 0.9582 (patient 67, full sliding-window inference) demonstrates the ensemble's capability on well-defined tumors.
 
 AUC (Area Under the ROC Curve): Ranges 0–1; a score of 1.0 is a perfect classifier and 0.5 is random chance. An AUC of 0.9200 for benign vs. malignant classification represents strong clinical-grade discriminative ability.
 

@@ -7,7 +7,26 @@
 
 streamlit>=1.35.0
 plotly>=5.18.0
-huggingface_hub>=0.23.0
 numpy>=1.24.0
 scipy>=1.10.0
 Pillow>=10.0.0
+
+# Core ML
+torch==2.5.1
+monai==1.5.2
+numpy==1.26.4
+scipy==1.15.3
+scikit-image==0.25.2
+nibabel==5.3.2
+einops==0.8.1
+
+# App
+streamlit==1.45.1
+plotly==6.1.2
+matplotlib==3.10.3
+
+# Model download
+huggingface_hub==0.33.0
+
+# Utilities
+tqdm==4.67.1
